@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <style>
+        /* Estilos básicos para la vista */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #38a169; padding-bottom: 10px; }
+        h1 { color: #38a169; }
+        .user-info { font-weight: bold; }
+        .paciente-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .paciente-card h3 { margin-top: 0; color: #38a169; }
+        .paciente-card p { margin: 5px 0; }
+        .logout-form button { background-color: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏥 Listado de Pacientes</h1>
+        <div class="user-actions">
+            <span class="user-info">Hola, <%= nombreUsuario %></span>
+            <form action="/auth/logout" method="POST" class="logout-form" style="display: inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>Pacientes Registrados (<%= pacientes.length %>)</h2>
+
+    <% if (pacientes.length === 0) { %>
+        <p>Aún no tienes pacientes registrados.</p>
+    <% } else { %>
+        <% pacientes.forEach(p => { %>
+            <div class="paciente-card">
+                <h3><%= p.nombre %> <%= p.apellidos %> (ID: <%= p.id %>)</h3>
+                <p><strong>Edad (Nivel 8):</strong> <%= p.edad %> años</p>
+                <p>Fecha de Nacimiento: <%= p.fecha_nacimiento_formateada %></p>
+                <a href="/pacientes/<%= p.id %>">Ver Historial Completo</a>
+            </div>
+        <% }); %>
+    <% } %>
+
+    </body>
+</html>

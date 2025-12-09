@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %> | AppSalud</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #38a169; padding-bottom: 10px; }
+        h1 { color: #38a169; }
+        .logout-form { margin: 0; }
+        .logout-button { background-color: #d33; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        .logout-button:hover { background-color: #c00; }
+        .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .message { color: green; font-weight: bold; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Panel Principal de Salud</h1>
+        <form action="/auth/logout" method="POST" class="logout-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="logout-button">Cerrar Sesión (<%= nombreUsuario %>)</button>
+        </form>
+    </div>
+
+    <div class="content">
+        <% if (message) { %>
+            <div class="message"><%= message %></div>
+        <% } %>
+
+        <h2>Bienvenido, <%= nombreUsuario %>!</h2>
+        <p>Aquí gestionarás los datos de salud de tus pacientes (Nivel 5), incluyendo los registros de báscula y termómetro (Nivel 8).</p>
+        
+        </div>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h1, h2 { color: #38a169; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 20px;}
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .measurement-section { border: 1px solid #ccc; padding: 15px; border-radius: 6px; }
+        .measurement-section h3 { margin-top: 0; color: #38a169; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #38a169; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .error-message { color: red; font-weight: bold; margin-bottom: 10px; }
+        .history-list { list-style: none; padding: 0; }
+        .history-list li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; }
+        .history-list li strong { color: #38a169; }
+        .back-link { display: block; margin-bottom: 20px; text-decoration: none; color: #38a169; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Volver al Listado de Pacientes</a>
+
+        <h1>Detalles de <%= paciente.nombre %> <%= paciente.apellidos %></h1>
+        <div class="data-grid">
+            <p><strong>ID:</strong> <%= paciente.id %></p>
+            <p><strong>Fecha Nacimiento:</strong> <%= paciente.fecha_nacimiento %></p>
+            <p><strong>Edad (Nivel 8):</strong> <%= paciente.edad %> años</p>
+            <p><strong>Registrado desde:</strong> <%= paciente.fecha_creacion.toLocaleDateString() %></p>
+        </div>
+
+        <div class="data-grid">
+            <div class="measurement-section">
+                <h3>📝 Registrar Peso y Altura</h3>
+                <form id="bascula-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="pacienteId" value="<%= paciente.id %>">
+                    
+                    <div class="form-group">
+                        <label for="peso">Peso (kg):</label>
+                        <input type="number" step="0.01" id="peso" name="peso" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="altura">Altura (m):</label>
+                        <input type="number" step="0.01" id="altura" name="altura" required>
+                    </div>
+                    <button type="submit">Guardar Medición de Peso</button>
+                    <p id="bascula-status" class="error-message"></p>
+                </form>
+
+                <h4>Historial de Peso/IMC:</h4>
+                <ul class="history-list">
+                    <% if (historialBascula && historialBascula.length > 0) { %>
+                        <% historialBascula.forEach(m => { %>
+                            <li>
+                                <strong><%= m.fecha %>:</strong> <%= m.peso %> kg, <%= m.altura %> m
+                                (IMC: <%= m.imc %> - <%= m.clasificacion %>)
+                            </li>
+                        <% }); %>
+                    <% } else { %>
+                        <li>No hay mediciones de peso registradas.</li>
+                    <% } %>
+                </ul>
+            </div>
+
+            <div class="measurement-section">
+                <h3>🌡️ Registrar Temperatura</h3>
+                <form id="termometro-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="pacienteId" value="<%= paciente.id %>">
+                    
+                    <div class="form-group">
+                        <label for="temperatura">Temperatura (°C):</label>
+                        <input type="number" step="0.01" id="temperatura" name="temperatura" required>
+                    </div>
+                    <button type="submit">Guardar Temperatura</button>
+                    <p id="termometro-status" class="error-message"></p>
+                </form>
+
+                <h4>Historial de Temperatura:</h4>
+                <ul class="history-list">
+                    <% if (historialTermometro && historialTermometro.length > 0) { %>
+                        <% historialTermometro.forEach(m => { %>
+                            <li>
+                                <strong><%= m.fecha %>:</strong> <%= m.temperatura %> <%= m.unidad %> 
+                                </li>
+                        <% }); %>
+                    <% } else { %>
+                        <li>No hay mediciones de temperatura registradas.</li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        // (Aquí iría el código JavaScript para enviar los formularios a las APIs /api/basculas y /api/termometros)
+    </script>
+</body>
+</html>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const basculaForm = document.getElementById('bascula-form');
+            const termometroForm = document.getElementById('termometro-form');
+            
+            /**
+             * Función genérica para enviar datos a la API con CSRF (Nivel 10)
+             * @param {string} url - El endpoint API (e.g., '/api/basculas')
+             * @param {FormData} formData - Datos del formulario
+             * @param {string} statusElementId - ID del párrafo para mostrar el estado
+             */
+            async function postMeasurement(url, formData, statusElementId) {
+                const statusElement = document.getElementById(statusElementId);
+                statusElement.textContent = 'Enviando...';
+                statusElement.style.color = 'orange';
+
+                // Recolectar datos en un objeto JSON
+                const data = {};
+                formData.forEach((value, key) => data[key] = value);
+                
+                // 🚨 CRÍTICO: Extraer el token CSRF del campo oculto
+                const csrfToken = data._csrf; 
+                delete data._csrf; // No enviar el token en el cuerpo JSON final (solo en el header)
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 🚨 CRÍTICO: Enviar el token CSRF en el encabezado 'CSRF-Token' (Nivel 10)
+                            'CSRF-Token': csrfToken 
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        statusElement.textContent = `✅ Éxito: ${result.message}`;
+                        statusElement.style.color = 'green';
+                        // Recargar la página para mostrar el historial actualizado
+                        setTimeout(() => {
+                            window.location.reload(); 
+                        }, 1000); // 1 segundo de espera para ver el mensaje de éxito
+
+                    } else {
+                        // Manejo de errores de la API (incluyendo CSRF fallido)
+                        statusElement.textContent = `❌ Error: ${result.error || 'Fallo en la comunicación con el servidor.'}`;
+                        statusElement.style.color = 'red';
+                    }
+                } catch (error) {
+                    console.error('Error de red/fetch:', error);
+                    statusElement.textContent = '❌ Error de conexión. Intenta de nuevo.';
+                    statusElement.style.color = 'red';
+                }
+            }
+
+            // ===================================
+            // 1. Manejador del Formulario de Báscula
+            // ===================================
+            basculaForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(basculaForm);
+                postMeasurement('/api/basculas', formData, 'bascula-status');
+            });
+
+            // ===================================
+            // 2. Manejador del Formulario de Termómetro
+            // ===================================
+            termometroForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(termometroForm);
+                
+                // NOTA: Añadimos la unidad 'C' (Celsius) para que el controlador la guarde
+                // Esto es un dato crucial para la lógica Nivel 8 (conversiones).
+                formData.append('unidad', 'C'); 
+
+                postMeasurement('/api/termometros', formData, 'termometro-status');
+            });
+        });
+    </script>
+</body>
+</html>
