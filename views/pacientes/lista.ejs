@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <style>
+        /* Variables y Reset Básico */
+        :root {
+            --color-primary: #38a169; /* Verde Salud */
+            --color-secondary: #2c7a7b; /* Verde Azulado */
+            --color-background: #f7fafc;
+            --color-text: #2d3748;
+            --color-border: #e2e8f0;
+            --color-danger: #e53e3e;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Mensajes de Estado */
+        .message-box {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .success-message {
+            background-color: #f0fff4;
+            color: #38a169;
+            border: 1px solid #9ae6b4;
+        }
+        .error-message {
+            background-color: #fff5f5;
+            color: var(--color-danger);
+            border: 1px solid #feb2b2;
+        }
+
+        /* Botones y Enlaces de Navegación */
+        .nav-links a {
+            color: var(--color-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 4px;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .nav-links a:hover {
+            background-color: var(--color-secondary);
+            color: white;
+        }
+
+        /* Tabla de Pacientes */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+        th {
+            background-color: #ebf4ff; /* Fondo más claro para la cabecera */
+            color: #4a5568;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        tr:nth-child(even) {
+            background-color: #f7fafc; /* Color de fila alterno */
+        }
+        tr:hover {
+            background-color: #edf2f7; /* Hover en la fila */
+        }
+        
+        /* Acciones */
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .actions a {
+            color: var(--color-secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .actions a:hover {
+            text-decoration: underline;
+            color: var(--color-primary);
+        }
+
+        /* Estilo para el botón Eliminar (POST/DELETE) */
+        .delete-form button {
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--color-danger);
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        .delete-form button:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><%= title %></h1>
+        <div class="nav-links">
+            <a href="/">Volver al Panel Principal</a>
+            <a href="/pacientes/crear">Crear Nuevo Paciente</a>
+        </div>
+        
+        <% if (message) { %>
+            <p class="message-box success-message">Éxito: <%= message %></p>
+        <% } %>
+        
+        <% if (error) { %>
+            <p class="message-box error-message">Error: <%= error %></p>
+        <% } %>
+
+        <% if (pacientes && pacientes.length > 0) { %>
+            <p>Total de pacientes: **<%= pacientes.length %>**</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Fecha Nacimiento</th>
+                        <th>Edad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% pacientes.forEach(paciente => { %>
+                        <tr>
+                            <td><%= paciente.id %></td>
+                            <td><%= paciente.nombre %> <%= paciente.apellidos %></td>
+                            <td><%= paciente.fechaDeNacimiento %></td>
+                            <td>**<%= paciente.edad %> años**</td>
+                            <td class="actions">
+                                <a href="/pacientes/<%= paciente.id %>">Ver/Editar</a>
+                                
+                                <form class="delete-form" action="/pacientes/eliminar/<%= paciente.id %>?_method=DELETE" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a <%= paciente.nombre %> <%= paciente.apellidos %>?');">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"> 
+                                    
+                                    <button type="submit">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No hay pacientes registrados todavía.</p>
+        <% } %>
+    </div>
+</body>
+</html>

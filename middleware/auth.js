@@ -23,8 +23,8 @@ function protectRoute(req, res, next) {
         
         // Si es una petición web normal, redirigir a la página de login
         req.session.returnTo = req.originalUrl; // Guarda la URL a la que querían ir
-        // 🚨 CORRECCIÓN: Cambiar '/login' a '/auth/login'
-        res.redirect('/auth/login'); 
+        // 🚨 CRÍTICO: Añadimos 'return' aquí para detener la ejecución.
+        return res.redirect('/auth/login'); // <--- CORRECCIÓN CLAVE
     }
 }
 

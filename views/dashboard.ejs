@@ -2,21 +2,25 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title><%= title %> | AppSalud</title>
+    <title><%= title %></title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #38a169; padding-bottom: 10px; }
         h1 { color: #38a169; }
         .logout-form { margin: 0; }
-        .logout-button { background-color: #d33; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        .logout-button:hover { background-color: #c00; }
+        .logout-button { background-color: #d33; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; }
         .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        .message { color: green; font-weight: bold; margin-bottom: 15px; }
+        .section { margin-bottom: 25px; }
+        .section h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #333; }
+        .section ul { list-style: none; padding: 0; }
+        .section ul li { margin-bottom: 10px; }
+        .section ul li a { text-decoration: none; color: #007bff; font-weight: bold; }
+        .section ul li a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Panel Principal de Salud</h1>
+        <h1>Panel de Control de AppSalud</h1>
         <form action="/auth/logout" method="POST" class="logout-form">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit" class="logout-button">Cerrar Sesión (<%= nombreUsuario %>)</button>
@@ -25,12 +29,26 @@
 
     <div class="content">
         <% if (message) { %>
-            <div class="message"><%= message %></div>
+            <p style="color: green; font-weight: bold;"><%= message %></p>
         <% } %>
 
-        <h2>Bienvenido, <%= nombreUsuario %>!</h2>
-        <p>Aquí gestionarás los datos de salud de tus pacientes (Nivel 5), incluyendo los registros de báscula y termómetro (Nivel 8).</p>
-        
+        <div class="section">
+            <h2>🏥 Gestión de Pacientes (CRUD)</h2>
+            <p>Aquí puedes crear y consultar los datos de los pacientes.</p>
+            <ul>
+                <li><a href="/pacientes/crear">➕ Crear Nuevo Paciente</a></li>
+                <li><a href="/pacientes/lista">📋 Ver Listado de Pacientes (Leer)</a></li>
+            </ul>
         </div>
+
+        <div class="section">
+            <h2>🌡️ Gestión de Dispositivos</h2>
+            <p>Registra y consulta datos de Básculas y Termómetros.</p>
+            <ul>
+                <li><a href="/basculas/registros">Registrar / Ver Pesajes</a></li>
+                <li><a href="/termometros/registros">Registrar / Ver Temperaturas</a></li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

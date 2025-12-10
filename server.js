@@ -6,7 +6,6 @@ const session = require('express-session');
 const csrf = require('csurf');
 const helmet = require('helmet');
 const { testConnection } = require('./database'); 
-// 🚨 IMPORTANTE: Asegúrate de que tu middleware/auth.js redirija a /auth/login
 const { protectRoute } = require('./middleware/auth'); // Middleware de protección (Nivel 10)
 
 // Configuración EJS
@@ -76,6 +75,12 @@ app.use((req, res, next) => {
 
 // Rutas de Autenticación (NO protegidas)
 app.use('/auth', authRoutes);
+
+// ===============================================
+// 🌐 Rutas WEB Protegidas (VISTAS EJS: /pacientes/crear, /pacientes/lista)
+// 🚨 SOLUCIÓN AL ERROR 'Cannot GET /pacientes/crear'
+app.use('/pacientes', protectRoute, pacienteRoutes); 
+// ===============================================
 
 
 // Rutas de la API (Protegidas por `protectRoute` - Nivel 10)
@@ -166,7 +171,8 @@ async function startServer() {
             console.log('='.repeat(50) + '\n');
             
             console.log('📋 Rutas disponibles:');
-            console.log('  GET  /              - Página principal (Web - PROTEGIDA)'); // Actualizado
+            console.log('  GET  /              - Página principal (Web - PROTEGIDA)');
+            console.log('  GET  /pacientes/crear - Formulario de Paciente (Web - PROTEGIDA)'); // Añadido para claridad
             console.log('  POST /auth/register - Registro de usuario (Web)');
             console.log('  POST /auth/login    - Inicio de sesión (Web)');
             console.log('  POST /auth/logout   - Cerrar sesión (Web)');

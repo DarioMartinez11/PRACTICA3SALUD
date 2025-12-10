@@ -4,36 +4,293 @@
     <meta charset="UTF-8">
     <title><%= title %></title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        h1, h2 { color: #38a169; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 20px;}
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .measurement-section { border: 1px solid #ccc; padding: 15px; border-radius: 6px; }
-        .measurement-section h3 { margin-top: 0; color: #38a169; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #38a169; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-        .error-message { color: red; font-weight: bold; margin-bottom: 10px; }
-        .history-list { list-style: none; padding: 0; }
-        .history-list li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; }
-        .history-list li strong { color: #38a169; }
-        .back-link { display: block; margin-bottom: 20px; text-decoration: none; color: #38a169; font-weight: bold; }
+        /* Variables y Estilos Generales */
+        :root {
+            --color-primary: #38a169;
+            --color-secondary: #2c7a7b;
+            --color-background: #f7fafc;
+            --color-text: #2d3748;
+            --color-border: #e2e8f0;
+            --color-danger: #e53e3e;
+            --color-success: #38a169;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px; /* Aumentado para contener mejor las secciones */
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Mensajes de Estado (Éxito/Error) */
+        .message-box {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .success-message {
+            background-color: #f0fff4;
+            color: var(--color-success);
+            border: 1px solid #9ae6b4;
+        }
+        .error-message {
+            background-color: #fff5f5;
+            color: var(--color-danger);
+            border: 1px solid #feb2b2;
+        }
+
+        /* Enlaces de Navegación */
+        .nav-link a {
+            color: var(--color-secondary);
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 0;
+        }
+        .nav-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Estilos del Formulario de Edición (Datos Base del Paciente) */
+        .edit-form > div {
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 150px 1fr; /* Etiqueta a la izquierda, campo a la derecha */
+            align-items: center;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="tel"],
+        input[type="email"],
+        input[type="number"],
+        select {
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            box-sizing: border-box; 
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: var(--color-primary);
+            outline: none;
+        }
+        
+        .form-hint {
+            grid-column: 2 / 3; 
+            color: #718096;
+            font-size: 0.85em;
+            margin-top: -10px;
+        }
+
+        button[type="submit"] {
+            grid-column: 1 / 3; 
+            background-color: var(--color-secondary);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+        button[type="submit"]:hover {
+            background-color: #236a6a; 
+        }
+
+        /* Estilos de las Secciones de Medición (Báscula/Termómetro) */
+        .measurement-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .measurement-section {
+            border: 1px solid var(--color-border);
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+        }
+        .measurement-section h3 { 
+            margin-top: 0; 
+            color: var(--color-secondary);
+            border-bottom: 1px dashed var(--color-border);
+            padding-bottom: 10px;
+        }
+
+        .history-list { 
+            list-style: none; 
+            padding: 0; 
+            margin-top: 15px;
+            max-height: 250px; /* Para historial largo */
+            overflow-y: auto;
+        }
+        .history-list li { 
+            background: #ffffff; 
+            padding: 8px; 
+            border-bottom: 1px solid #eee; 
+            font-size: 0.9em;
+        }
+        .history-list li:last-child {
+            border-bottom: none;
+        }
+
+        #bascula-form .form-group, #termometro-form .form-group {
+            margin-bottom: 10px;
+        }
+        
+        #bascula-form button, #termometro-form button {
+            background-color: var(--color-primary);
+            padding: 10px;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 0.9em;
+            grid-column: auto;
+        }
+        #bascula-form button:hover, #termometro-form button:hover {
+            background-color: #318a56;
+        }
+        
+        .patient-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .patient-info p {
+            margin: 0;
+            font-size: 0.95em;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-link">← Volver al Listado de Pacientes</a>
+        <p class="nav-link"><a href="/pacientes/lista">← Volver al Listado de Pacientes</a></p>
 
-        <h1>Detalles de <%= paciente.nombre %> <%= paciente.apellidos %></h1>
-        <div class="data-grid">
+        <h1>Detalle y Edición de Paciente (ID: <%= paciente.id %>)</h1>
+
+        <% if (message) { %>
+            <p class="message-box success-message">✅ Éxito: <%= message %></p>
+        <% } %>
+        
+        <% if (error) { %>
+            <p class="message-box error-message">❌ Error: <%= error %></p>
+        <% } %>
+
+        <div class="patient-info">
             <p><strong>ID:</strong> <%= paciente.id %></p>
-            <p><strong>Fecha Nacimiento:</strong> <%= paciente.fecha_nacimiento %></p>
-            <p><strong>Edad (Nivel 8):</strong> <%= paciente.edad %> años</p>
-            <p><strong>Registrado desde:</strong> <%= paciente.fecha_creacion.toLocaleDateString() %></p>
+            <p><strong>Edad:</strong> <%= paciente.edad || 'N/A' %> años</p> 
+            <p><strong>Registrado desde:</strong> <%= paciente.fecha_creacion ? paciente.fecha_creacion.toLocaleDateString('es-ES') : 'N/A' %></p>
         </div>
 
-        <div class="data-grid">
+
+        <h2>Datos Personales</h2>
+        <form action="/pacientes/editar/<%= paciente.id %>" method="POST" class="edit-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"> 
+            
+            <div>
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" value="<%= paciente.nombre || '' %>" required>
+            </div>
+            
+            <div>
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" name="apellidos" value="<%= paciente.apellidos || '' %>" required>
+            </div>
+            
+            <div>
+                <label for="fechaDeNacimiento">Fecha Nacimiento:</label>
+                <% 
+                    // Función para asegurar el formato YYYY-MM-DD para el input type="date"
+                    let fNac = '';
+                    if (paciente.fecha_nacimiento) {
+                        if (paciente.fecha_nacimiento instanceof Date) {
+                            fNac = paciente.fecha_nacimiento.toISOString().substring(0, 10);
+                        } else if (typeof paciente.fecha_nacimiento === 'string' && paciente.fecha_nacimiento.length >= 10) {
+                            fNac = paciente.fecha_nacimiento.substring(0, 10);
+                        }
+                    }
+                %>
+                <input type="date" id="fechaDeNacimiento" name="fechaDeNacimiento" value="<%= fNac %>" required>
+                <span class="form-hint">Formato: AAAA-MM-DD</span>
+            </div>
+            
+            <div>
+                <label for="dni">DNI:</label>
+                <input type="text" id="dni" name="dni" value="<%= paciente.dni || '' %>">
+            </div>
+
+            <div>
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" value="<%= paciente.telefono || '' %>">
+            </div>
+
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="<%= paciente.email || '' %>">
+            </div>
+
+            <div>
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" value="<%= paciente.direccion || '' %>">
+            </div>
+
+            <div>
+                <label for="genero">Género:</label>
+                <select id="genero" name="genero">
+                    <option value="" <%= !paciente.genero ? 'selected' : '' %>>Seleccione...</option>
+                    <option value="M" <%= paciente.genero === 'M' ? 'selected' : '' %>>Masculino</option>
+                    <option value="F" <%= paciente.genero === 'F' ? 'selected' : '' %>>Femenino</option>
+                    <option value="O" <%= paciente.genero === 'O' ? 'selected' : '' %>>Otro</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="altura">Altura (cm):</label>
+                <input type="number" id="altura" name="altura" step="1" min="0" value="<%= paciente.altura || '' %>"> 
+                <span class="form-hint">Dato utilizado para calcular IMC.</span>
+            </div>
+            
+            <button type="submit">Guardar Cambios del Paciente</button>
+            
+            <span class="form-hint" style="grid-column: 1 / 3; margin-top: 15px;">
+                Última Actualización: <%= paciente.fecha_actualizacion ? paciente.fecha_actualizacion.toLocaleString('es-ES') : 'N/A' %>
+            </span>
+        </form>
+
+        <div class="measurement-grid">
+            
             <div class="measurement-section">
                 <h3>📝 Registrar Peso y Altura</h3>
                 <form id="bascula-form">
@@ -45,23 +302,28 @@
                         <input type="number" step="0.01" id="peso" name="peso" required>
                     </div>
                     <div class="form-group">
-                        <label for="altura">Altura (m):</label>
-                        <input type="number" step="0.01" id="altura" name="altura" required>
+                        <label for="altura_bascula">Altura (m):</label>
+                        <input type="number" step="0.01" id="altura_bascula" name="altura" required>
                     </div>
                     <button type="submit">Guardar Medición de Peso</button>
-                    <p id="bascula-status" class="error-message"></p>
+                    <p id="bascula-status" class="message-box error-message"></p>
                 </form>
 
                 <h4>Historial de Peso/IMC:</h4>
                 <ul class="history-list">
-                    <% if (historialBascula && historialBascula.length > 0) { %>
-                        <% historialBascula.forEach(m => { %>
-                            <li>
-                                <strong><%= m.fecha %>:</strong> <%= m.peso %> kg, <%= m.altura %> m
-                                (IMC: <%= m.imc %> - <%= m.clasificacion %>)
-                            </li>
-                        <% }); %>
-                    <% } else { %>
+                    <% 
+                    // Esta variable debe ser pasada por pacienteRoutes.js, conteniendo campos como fecha, peso, altura, imc, clasificacion
+                    if (typeof historialBascula !== 'undefined' && historialBascula.length > 0) { 
+                        historialBascula.forEach(m => { 
+                    %>
+                        <li>
+                            <strong><%= m.fecha.toLocaleString('es-ES') %>:</strong> <%= m.peso %> kg / <%= m.altura %> m
+                            (IMC: <%= m.imc %> - **<%= m.clasificacion %>**)
+                        </li>
+                    <% 
+                        }); 
+                    } else { 
+                    %>
                         <li>No hay mediciones de peso registradas.</li>
                     <% } %>
                 </ul>
@@ -75,33 +337,32 @@
                     
                     <div class="form-group">
                         <label for="temperatura">Temperatura (°C):</label>
-                        <input type="number" step="0.01" id="temperatura" name="temperatura" required>
+                        <input type="number" step="0.01" id="temperatura" name="temperatura" min="30" max="45" required>
                     </div>
                     <button type="submit">Guardar Temperatura</button>
-                    <p id="termometro-status" class="error-message"></p>
+                    <p id="termometro-status" class="message-box error-message"></p>
                 </form>
 
                 <h4>Historial de Temperatura:</h4>
                 <ul class="history-list">
-                    <% if (historialTermometro && historialTermometro.length > 0) { %>
-                        <% historialTermometro.forEach(m => { %>
-                            <li>
-                                <strong><%= m.fecha %>:</strong> <%= m.temperatura %> <%= m.unidad %> 
-                                </li>
-                        <% }); %>
-                    <% } else { %>
+                    <% 
+                    // Esta variable debe ser pasada por pacienteRoutes.js
+                    if (typeof historialTermometro !== 'undefined' && historialTermometro.length > 0) { 
+                        historialTermometro.forEach(m => { 
+                    %>
+                        <li>
+                            <strong><%= m.fecha.toLocaleString('es-ES') %>:</strong> <%= m.temperatura %> <%= m.unidad %> 
+                        </li>
+                    <% 
+                        }); 
+                    } else { 
+                    %>
                         <li>No hay mediciones de temperatura registradas.</li>
                     <% } %>
                 </ul>
             </div>
-        </div>
-    </div>
-    <script>
-        // (Aquí iría el código JavaScript para enviar los formularios a las APIs /api/basculas y /api/termometros)
-    </script>
-</body>
-</html>
-<script>
+
+        </div> </div> <script>
         document.addEventListener('DOMContentLoaded', () => {
             const basculaForm = document.getElementById('bascula-form');
             const termometroForm = document.getElementById('termometro-form');
@@ -116,6 +377,7 @@
                 const statusElement = document.getElementById(statusElementId);
                 statusElement.textContent = 'Enviando...';
                 statusElement.style.color = 'orange';
+                statusElement.classList.remove('success-message', 'error-message');
 
                 // Recolectar datos en un objeto JSON
                 const data = {};
@@ -140,21 +402,22 @@
 
                     if (response.ok) {
                         statusElement.textContent = `✅ Éxito: ${result.message}`;
-                        statusElement.style.color = 'green';
+                        statusElement.classList.add('success-message');
+                        
                         // Recargar la página para mostrar el historial actualizado
                         setTimeout(() => {
                             window.location.reload(); 
-                        }, 1000); // 1 segundo de espera para ver el mensaje de éxito
+                        }, 1000); 
 
                     } else {
                         // Manejo de errores de la API (incluyendo CSRF fallido)
                         statusElement.textContent = `❌ Error: ${result.error || 'Fallo en la comunicación con el servidor.'}`;
-                        statusElement.style.color = 'red';
+                        statusElement.classList.add('error-message');
                     }
                 } catch (error) {
                     console.error('Error de red/fetch:', error);
                     statusElement.textContent = '❌ Error de conexión. Intenta de nuevo.';
-                    statusElement.style.color = 'red';
+                    statusElement.classList.add('error-message');
                 }
             }
 
@@ -174,8 +437,7 @@
                 e.preventDefault();
                 const formData = new FormData(termometroForm);
                 
-                // NOTA: Añadimos la unidad 'C' (Celsius) para que el controlador la guarde
-                // Esto es un dato crucial para la lógica Nivel 8 (conversiones).
+                // NOTA: Añadimos la unidad 'C' (Celsius)
                 formData.append('unidad', 'C'); 
 
                 postMeasurement('/api/termometros', formData, 'termometro-status');
